@@ -82,7 +82,7 @@ def main():
     st.title("Aruco Marker Detection")
 
     # OpenCV video capture
-    cap = cv2.VideoCapture(0)
+    cap = cv2.VideoCapture(-1)
     
     # Wait for the camera to open successfully
     while not cap.isOpened():
