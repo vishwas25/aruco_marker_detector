@@ -83,6 +83,12 @@ def main():
 
     # OpenCV video capture
     cap = cv2.VideoCapture(0)
+    
+    # Wait for the camera to open successfully
+    while not cap.isOpened():
+        st.warning("Error: Unable to open the camera. Please check if the camera is connected.")
+        st.stop()
+
     augDics = loadAugImages("Markers")
 
     # Streamlit placeholder for displaying the camera feed
@@ -90,6 +96,12 @@ def main():
 
     while True:
         success, img = cap.read()
+
+        # Check if the camera read was successful
+        if not success:
+            st.warning("Error: Unable to read from the camera.")
+            break
+
         arucoFound = findArucoMarkers(img)
 
         # Loop through all the markers and augment each one
