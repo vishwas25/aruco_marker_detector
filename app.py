@@ -101,8 +101,8 @@ def main():
 
     webrtc_ctx = webrtc_streamer(
         key="example",
-        video_transformer_factory=ArucoTransformer,
-        async_transform=True,
+        video_processor_factory=ArucoTransformer,
+        async_processing=True,
     )
 
 if __name__ == "__main__":
