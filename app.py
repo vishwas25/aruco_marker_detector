@@ -1,8 +1,8 @@
 import streamlit as st
-import cv2
+import cv2 as cv2
 import cv2.aruco as aruco
 import numpy as np
-import os
+import os as os
 
 def loadAugImages(path):
     """
