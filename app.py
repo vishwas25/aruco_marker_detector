@@ -3,6 +3,7 @@ import cv2 as cv2
 import cv2.aruco as aruco
 import numpy as np
 import os as os
+from streamlit_webrtc import VideoTransformerBase, webrtc_streamer
 
 def loadAugImages(path):
     """
@@ -78,48 +79,31 @@ def augmentAruco(bbox,id, img,imgAug, drawId=True):
     return imgOut
 
 
-def main():
-    st.title("Aruco Marker Detection")
+class ArucoTransformer(VideoTransformerBase):
+    def __init__(self):
+        self.augDics = loadAugImages("Markers")
 
-    # OpenCV video capture
-    cap = cv2.VideoCapture(-1)
-    
-    # Wait for the camera to open successfully
-    while not cap.isOpened():
-        st.warning("Error: Unable to open the camera. Please check if the camera is connected.")
-        st.stop()
-
-    augDics = loadAugImages("Markers")
-
-    # Streamlit placeholder for displaying the camera feed
-    image_placeholder = st.image([], channels="BGR", use_column_width=True)
-
-    while True:
-        success, img = cap.read()
-
-        # Check if the camera read was successful
-        if not success:
-            st.warning("Error: Unable to read from the camera.")
-            break
+    def transform(self, frame):
+        img = frame.to_ndarray(format="bgr24")
 
         arucoFound = findArucoMarkers(img)
 
         # Loop through all the markers and augment each one
         if len(arucoFound[0]) != 0:
             for bbox, marker_id in zip(arucoFound[0], arucoFound[1]):
-                if int(marker_id) in augDics.keys():
-                    img = augmentAruco(bbox, marker_id, img, augDics[int(marker_id)])
+                if int(marker_id) in self.augDics.keys():
+                    img = augmentAruco(bbox, marker_id, img, self.augDics[int(marker_id)])
 
-        # Display the camera feed in the Streamlit app
-        image_placeholder.image(img, channels="BGR")
+        return img
 
-        # Wait for a key event and break the loop if the 'Esc' key is pressed
-        if cv2.waitKey(30) & 0xFF == 27:
-            break
+def main():
+    st.title("Aruco Marker Detection with Webcam Streaming")
 
-    # Release the camera and close the OpenCV window when the app is closed
-    cap.release()
-    cv2.destroyAllWindows()
+    webrtc_ctx = webrtc_streamer(
+        key="example",
+        video_transformer_factory=ArucoTransformer,
+        async_transform=True,
+    )
 
 if __name__ == "__main__":
     main()
